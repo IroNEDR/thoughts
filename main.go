@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+var app AppConfig
 var th ThoughtHandler
 
 func main() {
