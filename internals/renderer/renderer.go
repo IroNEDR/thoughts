@@ -1,4 +1,4 @@
-package main
+package renderer
 
 import (
 	"embed"
@@ -6,8 +6,9 @@ import (
 	"html/template"
 	"io/fs"
 	"log"
-	"net/http"
 	"path/filepath"
+
+	"github.com/IroNEDR/thoughts/internals/config"
 )
 
 var (
@@ -16,10 +17,21 @@ var (
 	content embed.FS
 )
 
-type TemplateCache map[string]*template.Template
+type Renderer interface {
+	CreateTemplateCache() (config.TemplateCache, error)
+	Render(tmpl string) (*template.Template, error)
+}
 
-func CreatetemplateCache() (TemplateCache, error) {
-	cache := TemplateCache{}
+type renderer struct {
+	app *config.AppConfig
+}
+
+func NewRenderer(app *config.AppConfig) Renderer {
+	return &renderer{app}
+}
+
+func (r *renderer) CreateTemplateCache() (config.TemplateCache, error) {
+	cache := config.TemplateCache{}
 	// List all the pages that are in the "templates" folder of the content which end with "page.tmpl"
 	pages, err := fs.Glob(content, "templates/*.page.tmpl")
 	if err != nil {
@@ -49,21 +61,21 @@ func CreatetemplateCache() (TemplateCache, error) {
 	return cache, nil
 }
 
-func Render(w http.ResponseWriter, tpl string) error {
-	for k := range app.TemplCache {
+func (r *renderer) Render(tpl string) (*template.Template, error) {
+	for k := range r.app.TemplCache {
 		log.Println(k)
 	}
-	templ, ok := app.TemplCache[tpl]
+	templ, ok := r.app.TemplCache[tpl]
 	if !ok {
-		return errors.New("template not found")
+		return nil, errors.New("template not found")
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
-	err := templ.Execute(w, "ekino")
-	if err != nil {
-		return err
-	}
+	// w.Header().Set("Content-Type", "text/html")
+	// w.WriteHeader(http.StatusOK)
+	// err := templ.Execute(w, "ekino")
+	// if err != nil {
+	// 	return err
+	// }
 
-	return nil
+	return templ, nil
 }

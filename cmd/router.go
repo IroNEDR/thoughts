@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/IroNEDR/thoughts/internals/middleware"
 )
 
 type route struct {
@@ -26,11 +28,11 @@ func newRoute(method, pattern string, handler http.Handler) route {
 
 func setupRoutes() []route {
 	routes := []route{
-		newRoute(http.MethodGet, "/", LoggingMiddleware(http.HandlerFunc(th.List))),
-		newRoute(http.MethodPost, "/", LoggingMiddleware(http.HandlerFunc(th.Create))),
-		newRoute(http.MethodGet, "/thoughts/([^/]+)", LoggingMiddleware(http.HandlerFunc(th.Get))),
-		newRoute(http.MethodPut, "/thoughts/([^/]+)", LoggingMiddleware(http.HandlerFunc(th.Update))),
-		newRoute(http.MethodDelete, "/thoughts/([^/]+)", LoggingMiddleware(http.HandlerFunc(th.Delete))),
+		newRoute(http.MethodGet, "/", middleware.LoggingMiddleware(http.HandlerFunc(th.List))),
+		newRoute(http.MethodPost, "/", middleware.LoggingMiddleware(http.HandlerFunc(th.Create))),
+		newRoute(http.MethodGet, "/thoughts/([^/]+)", middleware.LoggingMiddleware(http.HandlerFunc(th.Get))),
+		newRoute(http.MethodPut, "/thoughts/([^/]+)", middleware.LoggingMiddleware(http.HandlerFunc(th.Update))),
+		newRoute(http.MethodDelete, "/thoughts/([^/]+)", middleware.LoggingMiddleware(http.HandlerFunc(th.Delete))),
 	}
 	return routes
 }

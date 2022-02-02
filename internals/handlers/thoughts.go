@@ -1,8 +1,11 @@
-package main
+package handlers
 
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/IroNEDR/thoughts/internals/config"
+	"github.com/IroNEDR/thoughts/internals/renderer"
 )
 
 type Thought struct {
@@ -22,10 +25,13 @@ type ThoughtHandler interface {
 	Delete(w http.ResponseWriter, r *http.Request)
 }
 
-type thoughtHandler struct{}
+type thoughtHandler struct {
+	app      *config.AppConfig
+	renderer *renderer.Renderer
+}
 
-func newThoughtHandler() ThoughtHandler {
-	return thoughtHandler{}
+func NewThoughtHandler(app *config.AppConfig, renderer *renderer.Renderer) ThoughtHandler {
+	return thoughtHandler{app, renderer}
 }
 
 func (th thoughtHandler) List(w http.ResponseWriter, r *http.Request) {
