@@ -1,0 +1,10 @@
+.hero {
+  height: 70vh;
+  position: relative;
+}
+
+#hero-main {
+  background: url("/static/images/undraw_forming_ideas_re_2afc.svg") no-repeat
+    center right;
+  height: 100vh;
+}

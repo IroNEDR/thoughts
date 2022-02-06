@@ -5,12 +5,6 @@ import (
 	"net/http"
 )
 
-type Category struct {
-	Name        string
-	Description string
-	Icon        string
-}
-
 type CategoryHandler interface {
 	Create(w http.ResponseWriter, r *http.Request)
 	List(w http.ResponseWriter, r *http.Request)

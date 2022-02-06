@@ -15,7 +15,7 @@ var (
 
 type Renderer interface {
 	CreateTemplateCache() (config.TemplateCache, error)
-	Render(tmpl string) (*template.Template, error)
+	LoadTemplate(tmpl string) (*template.Template, error)
 }
 
 type renderer struct {
@@ -33,7 +33,7 @@ func (r *renderer) CreateTemplateCache() (config.TemplateCache, error) {
 	if err != nil {
 		return nil, err
 	}
-	layouts, err := filepath.Glob("templates/layout.tmpl")
+	layouts, err := filepath.Glob("templates/*.layout.tmpl")
 	if err != nil {
 		return nil, err
 	}
@@ -44,20 +44,22 @@ func (r *renderer) CreateTemplateCache() (config.TemplateCache, error) {
 		if err != nil {
 			return nil, err
 		}
-		if len(layouts) == 1 {
-			ts, err = ts.ParseFiles(layouts[0])
-			if err != nil {
-				return nil, err
+		if len(layouts) > 0 {
+			for _, layout := range layouts {
+				ts, err = ts.ParseFiles(layout)
+				if err != nil {
+					return nil, err
+				}
 			}
 		} else {
-			return nil, errors.New("layout missing")
+			return nil, errors.New("layouts missing")
 		}
 		cache[pageName] = ts
 	}
 	return cache, nil
 }
 
-func (r *renderer) Render(tpl string) (*template.Template, error) {
+func (r *renderer) LoadTemplate(tpl string) (*template.Template, error) {
 	for k := range r.app.TemplCache {
 		log.Println(k)
 	}
@@ -65,13 +67,5 @@ func (r *renderer) Render(tpl string) (*template.Template, error) {
 	if !ok {
 		return nil, errors.New("template not found")
 	}
-
-	// w.Header().Set("Content-Type", "text/html")
-	// w.WriteHeader(http.StatusOK)
-	// err := templ.Execute(w, "ekino")
-	// if err != nil {
-	// 	return err
-	// }
-
 	return templ, nil
 }

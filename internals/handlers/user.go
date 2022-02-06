@@ -5,12 +5,6 @@ import (
 	"net/http"
 )
 
-type User struct {
-	Username    string
-	Description string
-	Interests   string
-}
-
 type UserHandler interface {
 	Me(w http.ResponseWriter, r *http.Request)
 }

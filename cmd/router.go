@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
 
 	"github.com/IroNEDR/thoughts/internals/middleware"
+	"github.com/gorilla/csrf"
 )
 
 type route struct {
@@ -28,16 +30,17 @@ func newRoute(method, pattern string, handler http.Handler) route {
 
 func setupRoutes() []route {
 	routes := []route{
-		newRoute(http.MethodGet, "/", middleware.LoggingMiddleware(http.HandlerFunc(th.List))),
-		newRoute(http.MethodPost, "/", middleware.LoggingMiddleware(http.HandlerFunc(th.Create))),
-		newRoute(http.MethodGet, "/thoughts/([^/]+)", middleware.LoggingMiddleware(http.HandlerFunc(th.Get))),
-		newRoute(http.MethodPut, "/thoughts/([^/]+)", middleware.LoggingMiddleware(http.HandlerFunc(th.Update))),
-		newRoute(http.MethodDelete, "/thoughts/([^/]+)", middleware.LoggingMiddleware(http.HandlerFunc(th.Delete))),
+		newRoute(http.MethodGet, "/", http.HandlerFunc(th.List)),
+		newRoute(http.MethodPost, "/", http.HandlerFunc(th.Create)),
+		newRoute(http.MethodGet, "/thoughts/([^/]+)", http.HandlerFunc(th.Get)),
+		newRoute(http.MethodPut, "/thoughts/([^/]+)", http.HandlerFunc(th.Update)),
+		newRoute(http.MethodDelete, "/thoughts/([^/]+)", http.HandlerFunc(th.Delete)),
+		newRoute(http.MethodGet, "/static/(.*)+", http.StripPrefix("/static", staticHandler)),
 	}
 	return routes
 }
 
-func Serve(w http.ResponseWriter, r *http.Request) {
+func serve(w http.ResponseWriter, r *http.Request) {
 	routes := setupRoutes()
 	var allow []string
 	for _, route := range routes {
@@ -57,5 +60,18 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "405 method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.NotFound(w, r)
+	tmpl, err := rd.LoadTemplate("notfound.page.tmpl")
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, nil)
+}
+
+func setupRouter() http.Handler {
+	mux := middleware.RequestLogger(http.HandlerFunc(serve))
+	mux = csrf.Protect(app.CSRFkey)(mux)
+	mux = app.SessionManager.LoadAndSave(mux)
+	return mux
 }

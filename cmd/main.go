@@ -18,10 +18,11 @@ import (
 const port = ":9090"
 
 var (
-	app     config.AppConfig
-	th      handlers.ThoughtHandler
-	rd      renderer.Renderer
-	session *scs.SessionManager
+	app            config.AppConfig
+	staticHandler  http.Handler
+	th             handlers.ThoughtHandler
+	rd             renderer.Renderer
+	sessionManager *scs.SessionManager
 )
 
 func main() {
@@ -33,10 +34,8 @@ func main() {
 	wg.Add(1)
 	go func() {
 		log.Printf("running on port %s", port)
-		log.Fatal(
-			http.ListenAndServe(port, csrf.Protect(app.CSRFkey)(
-				app.Session.LoadAndSave(
-					http.HandlerFunc(Serve)))))
+		mux := setupRouter()
+		log.Fatal(http.ListenAndServe(port, mux))
 		wg.Done()
 	}()
 
@@ -65,19 +64,20 @@ func AppSetup() error {
 	}
 	app.CSRFkey = []byte(env.CSRF_KEY)
 
-	session = scs.New()
-	session.Lifetime = 24 * time.Hour
-	session.Cookie.Persist = true
-	session.Cookie.SameSite = http.SameSiteLaxMode
-	session.Cookie.Secure = app.IsProd
-	app.Session = session
+	sessionManager = scs.New()
+	sessionManager.Lifetime = 24 * time.Hour
+	sessionManager.Cookie.Persist = true
+	sessionManager.Cookie.SameSite = http.SameSiteLaxMode
+	sessionManager.Cookie.Secure = app.IsProd
+	app.SessionManager = sessionManager
 
+	staticHandler = http.FileServer(http.Dir("./static/"))
 	rd = renderer.NewRenderer(&app)
 	tcache, err := rd.CreateTemplateCache()
 	if err != nil {
 		return err
 	}
 	app.TemplCache = tcache
-	th = handlers.NewThoughtHandler(&app, &rd)
+	th = handlers.NewThoughtHandler(&app, rd)
 	return nil
 }
