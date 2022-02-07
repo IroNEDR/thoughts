@@ -20,8 +20,9 @@ const port = ":9090"
 var (
 	app            config.AppConfig
 	staticHandler  http.Handler
-	th             handlers.ThoughtHandler
-	rd             renderer.Renderer
+	th             *handlers.ThoughtHandler
+	lh             *handlers.LandingHandler
+	rd             *renderer.Renderer
 	sessionManager *scs.SessionManager
 )
 
@@ -79,5 +80,6 @@ func AppSetup() error {
 	}
 	app.TemplCache = tcache
 	th = handlers.NewThoughtHandler(&app, rd)
+	lh = handlers.NewLandingHandler(&app, rd)
 	return nil
 }

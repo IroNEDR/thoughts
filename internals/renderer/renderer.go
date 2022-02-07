@@ -13,20 +13,15 @@ var (
 	templateFuncs = template.FuncMap{}
 )
 
-type Renderer interface {
-	CreateTemplateCache() (config.TemplateCache, error)
-	LoadTemplate(tmpl string) (*template.Template, error)
-}
-
-type renderer struct {
+type Renderer struct {
 	app *config.AppConfig
 }
 
-func NewRenderer(app *config.AppConfig) Renderer {
-	return &renderer{app}
+func NewRenderer(app *config.AppConfig) *Renderer {
+	return &Renderer{app}
 }
 
-func (r *renderer) CreateTemplateCache() (config.TemplateCache, error) {
+func (r *Renderer) CreateTemplateCache() (config.TemplateCache, error) {
 	cache := config.TemplateCache{}
 	// List all the pages that are in the "templates" folder of the content which end with "page.tmpl"
 	pages, err := filepath.Glob("./templates/*.page.tmpl")
@@ -59,7 +54,7 @@ func (r *renderer) CreateTemplateCache() (config.TemplateCache, error) {
 	return cache, nil
 }
 
-func (r *renderer) LoadTemplate(tpl string) (*template.Template, error) {
+func (r *Renderer) LoadTemplate(tpl string) (*template.Template, error) {
 	for k := range r.app.TemplCache {
 		log.Println(k)
 	}

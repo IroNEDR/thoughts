@@ -30,8 +30,9 @@ func newRoute(method, pattern string, handler http.Handler) route {
 
 func setupRoutes() []route {
 	routes := []route{
-		newRoute(http.MethodGet, "/", http.HandlerFunc(th.List)),
-		newRoute(http.MethodPost, "/", http.HandlerFunc(th.Create)),
+		newRoute(http.MethodGet, "/", http.HandlerFunc(lh.Index)),
+		newRoute(http.MethodGet, "/thoughts", http.HandlerFunc(th.List)),
+		newRoute(http.MethodPost, "/thoughts", http.HandlerFunc(th.Create)),
 		newRoute(http.MethodGet, "/thoughts/([^/]+)", http.HandlerFunc(th.Get)),
 		newRoute(http.MethodPut, "/thoughts/([^/]+)", http.HandlerFunc(th.Update)),
 		newRoute(http.MethodDelete, "/thoughts/([^/]+)", http.HandlerFunc(th.Delete)),

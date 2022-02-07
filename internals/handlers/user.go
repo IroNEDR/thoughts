@@ -5,17 +5,13 @@ import (
 	"net/http"
 )
 
-type UserHandler interface {
-	Me(w http.ResponseWriter, r *http.Request)
+type UserHandler struct{}
+
+func NewUserHandler() *UserHandler {
+	return &UserHandler{}
 }
 
-type userHandler struct{}
-
-func NewUserHandler() UserHandler {
-	return &userHandler{}
-}
-
-func (uh *userHandler) Me(w http.ResponseWriter, r *http.Request) {
+func (uh *UserHandler) Me(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Println(w, "ekin")
 }
