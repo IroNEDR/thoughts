@@ -9,8 +9,10 @@ import (
 	"time"
 
 	"github.com/IroNEDR/thoughts/internals/config"
+	"github.com/IroNEDR/thoughts/internals/db"
 	"github.com/IroNEDR/thoughts/internals/handlers"
 	"github.com/IroNEDR/thoughts/internals/renderer"
+	"github.com/IroNEDR/thoughts/internals/repository"
 	"github.com/alexedwards/scs/v2"
 	"github.com/gorilla/csrf"
 )
@@ -72,6 +74,11 @@ func AppSetup() error {
 	sessionManager.Cookie.Secure = app.IsProd
 	app.SessionManager = sessionManager
 
+	conn, err := db.NewConnectionPool(env.DSN)
+	if err != nil {
+		return err
+	}
+	repo := repository.NewRepository(&app, conn)
 	staticHandler = http.FileServer(http.Dir("./static/"))
 	rd = renderer.NewRenderer(&app)
 	tcache, err := rd.CreateTemplateCache()
@@ -79,7 +86,7 @@ func AppSetup() error {
 		return err
 	}
 	app.TemplCache = tcache
-	th = handlers.NewThoughtHandler(&app, rd)
+	th = handlers.NewThoughtHandler(&app, rd, repo)
 	lh = handlers.NewLandingHandler(&app, rd)
 	return nil
 }

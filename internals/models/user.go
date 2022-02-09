@@ -1,7 +1,7 @@
 package models
 
 type User struct {
-	Username    string
-	Description string
-	Interests   string
+	Username    string   `json:"username"`
+	Description string   `json:"description"`
+	Interests   []string `json:"interests"`
 }

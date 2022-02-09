@@ -6,15 +6,17 @@ import (
 
 	"github.com/IroNEDR/thoughts/internals/config"
 	"github.com/IroNEDR/thoughts/internals/renderer"
+	"github.com/IroNEDR/thoughts/internals/repository"
 )
 
 type ThoughtHandler struct {
 	app      *config.AppConfig
 	renderer *renderer.Renderer
+	repo     *repository.Repository
 }
 
-func NewThoughtHandler(app *config.AppConfig, renderer *renderer.Renderer) *ThoughtHandler {
-	return &ThoughtHandler{app, renderer}
+func NewThoughtHandler(app *config.AppConfig, renderer *renderer.Renderer, repo *repository.Repository) *ThoughtHandler {
+	return &ThoughtHandler{app, renderer, repo}
 }
 
 func (th *ThoughtHandler) List(w http.ResponseWriter, r *http.Request) {

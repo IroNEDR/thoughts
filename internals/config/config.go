@@ -18,4 +18,5 @@ type AppConfig struct {
 
 type Environment struct {
 	CSRF_KEY string
+	DSN      string
 }
